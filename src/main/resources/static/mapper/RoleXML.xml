@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.vitamincode04.mapper.RoleMapper">
+    <select id="selectAllRoleUser" resultType="org.example.vitamincode04.entity.RoleEntity">
+        select
+            rol.id,
+            rol.role_name,
+            rol.description
+        from role rol
+    </select>
+
+    <select id="selectRoleUserByName" resultType="org.example.vitamincode04.entity.RoleEntity">
+        select
+            rol.id,
+            rol.role_name,
+            rol.description
+        from role rol
+        where rol.role_name = #{role_name}
+    </select>
+
+    <insert id="createRole" parameterType="org.example.vitamincode04.entity.RoleEntity" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO role (role_name, description)
+        values (#{role_name}, #{description})
+    </insert>
+
+    <update id="updateRole" parameterType="org.example.vitamincode04.entity.RoleEntity">
+        update role
+        set role_name = #{role_name},
+        description = #{description}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from role
+        where id = #{idRole}
+    </delete>
+</mapper>

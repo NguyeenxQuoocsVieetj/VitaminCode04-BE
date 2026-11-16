@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.vitamincode04.mapper.RequestOfUserMapper">
+
+    <resultMap id="requestUser" type="org.example.vitamincode04.entity.RequestOfUser">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="email" property="email"/>
+        <result column="question" property="question"/>
+        <result column="status" property="status"/>
+        <association property="users" javaType="org.example.vitamincode04.entity.UserEntity">
+            <id column="userId" property="id"/>
+            <result column="user_name" property="username"/>
+            <result column="userEmail" property="email"/>
+            <association property="role" javaType="org.example.vitamincode04.entity.RoleEntity">
+                <id column="roleId" property="id"/>
+                <result column="role_name" property="role_name"/>
+                <result column="description" property="description"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <select id="selectRequestOfUsers" resultMap="requestUser">
+        SELECT
+            lr.id,
+            lr.username,
+            lr.email,
+            lr.question,
+            lr.status,
+            up.id as userId,
+            up.username as user_name,
+            up.email as userEmail,
+            r.id as roleId,
+            r.role_name,
+            r.description
+        FROM list_request lr
+                 LEFT JOIN user_profile up on lr.user_profile_id = up.id
+                 LEFT JOIN role r on up.role_id = r.id
+    </select>
+
+    <select id="selectRequestOfUserFindByEmail" resultMap="requestUser">
+        SELECT
+            lr.id,
+            lr.username,
+            lr.email,
+            lr.question,
+            lr.status,
+            up.id as userId,
+            up.username as userName,
+            up.email as userEmail,
+            r.id as roleId,
+            r.role_name,
+            r.description
+        FROM list_request lr
+                 LEFT JOIN user_profile up on lr.user_profile_id = up.id
+                 LEFT JOIN role r on up.role_id = r.id
+        WHERE up.email = #{email}
+        LIMIT 1
+    </select>
+
+    <insert id="insertRequestOfUser" parameterType="org.example.vitamincode04.entity.RequestOfUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO list_request (username, email, question, user_profile_id,  status)
+        VALUES (#{username}, #{email},  #{question}, (SELECT id FROM user_profile WHERE username = #{username}), #{status})
+    </insert>
+
+    <update id="updateRequestOfUser" parameterType="org.example.vitamincode04.entity.RequestOfUser">
+        UPDATE list_request
+        set username = #{username},
+            email = #{email},
+            question = #{question},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteRequestOfUser">
+        DELETE FROM list_request
+        WHERE id = #{userId}
+    </delete>
+
+</mapper>

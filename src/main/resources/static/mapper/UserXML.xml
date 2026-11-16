@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.vitamincode04.mapper.UserMapper">
+    <resultMap id="userMapper" type="org.example.vitamincode04.entity.UserEntity">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="email" property="email"/>
+
+        <association property="role" javaType="org.example.vitamincode04.entity.RoleEntity">
+            <id column="role_id" property="id"/>
+            <result column="role_name" property="role_name"/>
+            <result column="description" property="description"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAllUser" resultMap="userMapper">
+        select
+            up.id,
+            up.username,
+            up.email,
+            r.id as role_id,
+            r.role_name,
+            r.description
+        from user_profile up
+            LEFT JOIN role r on up.role_id = r.id
+    </select>
+
+    <select id="selectUserByUserName" resultMap="userMapper">
+        SELECT
+            up.id,
+            up.username,
+            up.email,
+            r.id as role_id,
+            r.role_name,
+            r.description
+        FROM user_profile up
+            LEFT JOIN role r on up.role_id = r.id
+        WHERE up.username like concat('%', #{username}, '%')
+        LIMIT 1;
+    </select>
+
+    <select id="selectJoinThreeTable" resultType="map">
+        select
+            up.id,
+            up.username,
+            up.email,
+            r.role_name,
+            lr.question,
+            lr.status
+        from list_request lr
+        join user_profile up on lr.user_profile_id = up.id
+        join role r on up.role_id = r.id
+    </select>
+    <insert id="insertUser" parameterType="org.example.vitamincode04.entity.UserEntity" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_profile (username, email, role_id) VALUES
+        (#{username}, #{email}, (select rol.id from role rol where rol.id = #{role.id}))
+    </insert>
+    <update id="updateUser" parameterType="org.example.vitamincode04.entity.UserEntity">
+        UPDATE user_profile
+        SET username = #{username},
+            email = #{email}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteUserById">
+        DELETE FROM user_profile
+        WHERE id = #{userId};
+    </delete>
+</mapper>
