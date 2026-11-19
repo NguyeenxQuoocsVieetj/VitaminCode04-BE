@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +27,11 @@ public class RoleApi {
         return ResponseEntity.ok(roleUserSer.getRoleUserByName(roleName));
     }
 
+    @GetMapping("/roles/{id}")
+    public ResponseEntity<RoleEntity> doGetRoleById(@PathVariable("id") int id){
+        return ResponseEntity.ok(roleUserSer.getRoleById(id));
+    }
+
     @PostMapping("/roles")
     public ResponseEntity<RoleEntity> doPostRoleEntity(@RequestBody RoleEntity roleEntity){
         RoleEntity saveRole = roleUserSer.createNewRole(roleEntity);
@@ -37,23 +44,19 @@ public class RoleApi {
     }
 
     @DeleteMapping("/roles/{id}")
-    public ResponseEntity<String> doDeleteRoleEntity(@PathVariable Integer id){
-        if(roleUserSer.deleteById(id)) return ResponseEntity.ok("xóa thành công role với id = " + id);
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không Tìm thấy Role với Id = " + id);
+    public Map<Object, RoleEntity> doDeleteRoleEntity(@PathVariable Integer id){
+        HashMap result = new HashMap();
+        try{
+            result.put("message", "Xóa thành công yêu cầu của user id = " + id);
+            result.put("data", roleUserSer.deleteById(id));
+            result.put("status", 200);
+        }catch (Exception e){
+            result.put("message", "Xóa yêu cầu của user id = " + id + " thất bại.");
+            result.put("data", null);
+            result.put("status", 500);
+        }
+        return result;
     }
 
-    @DeleteMapping("/roles")
-    public ResponseEntity<String> doDeleteRoleEntityByName(@RequestParam String roleName){
-        RoleEntity result = roleUserSer.getRoleUserByName(roleName);
-
-        if(result == null )
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Không tìm thấy role " + roleName);
-        if(roleUserSer.deleteById(result.getId()))
-            return ResponseEntity.ok("Xóa thành công role " + roleName);
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Xóa " + roleName + " thất bại.");
-    }
 
 }

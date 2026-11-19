@@ -13,23 +13,23 @@ import java.util.List;
 @RequestMapping("/home")
 public class HomeController {
 
-//    @GetMapping("")
-//    public String doGet(){
-//        return "index";
-//    }
-//
-//    @GetMapping("/listRequest")
-//    public String list(Model model){
-//
-//        List<RequestOfUser> users = Arrays.asList(
-//                new RequestOfUser("Nguyễn Việt", "nguyenviet@gmail.com", "Tôi muốn lấy 1000 phòng"),
-//                new RequestOfUser("Trần Quang", "tranquang@gmail.com", "Tôi muốn mua toàn b hệ thống"),
-//                new RequestOfUser("Nguyễn Hưng", "nguyenhung@gmail.com", "Chỉ lấy 1 cái")
-//        );
-//
-//        model.addAttribute("listUsers", users);
-//
-//        return "request";
-//    }
+    @GetMapping("")
+    public String doGet(){
+        return "index";
+    }
+
+    @GetMapping("/listRequest")
+    public String list(Model model){
+
+        List<RequestOfUser> users = Arrays.asList(
+                new RequestOfUser(1, "Nguyễn Việt", "nguyenviet@gmail.com", "Tôi muốn lấy 1000 phòng", null, "PENDING"),
+                new RequestOfUser(2, "Trần Quang", "tranquang@gmail.com", "Tôi muốn mua toàn bộ hệ thống", null, "PENDING"),
+                new RequestOfUser(3, "Nguyễn Hưng", "nguyenhung@gmail.com", "Chỉ lấy 1 cái", null, "APPROVED")
+        );
+
+        model.addAttribute("listUsers", users);
+
+        return "listrequest";
+    }
 
 }

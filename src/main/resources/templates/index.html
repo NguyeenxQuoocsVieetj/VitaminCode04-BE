@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ThermoSense – Quản lý nhiệt độ phòng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        :root{
+            --bg:#f3faf9; --surface:#ffffff; --surface-2:#e8f5f3;
+            --text:#1f3a3d; --muted:#5f7f82; --line:rgba(13,148,136,.14);
+            --primary:#14b8a6; --primary-dark:#0d9488; --primary-soft:#ccfbf1;
+            --cool:#3b82f6; --ok:#10b981; --hot:#f97316;
+            --shadow:0 10px 30px rgba(13,148,136,.10);
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{scroll-behavior:smooth;scroll-padding-top:80px}
+        body{font-family:'Be Vietnam Pro',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+        a{color:inherit;text-decoration:none}
+        .container{width:min(1140px,92%);margin-inline:auto}
+        section{padding:96px 0}
+        #features,#how{background:var(--surface)}
+        .head{text-align:center;max-width:640px;margin:0 auto 48px}
+        h2{font-size:clamp(1.8rem,3vw,2.4rem);line-height:1.25;margin-bottom:12px}
+        .muted,.head p{color:var(--muted)}
+        .grad{background:linear-gradient(90deg,var(--primary-dark),var(--primary));-webkit-background-clip:text;background-clip:text;color:transparent}
+        .btn{display:inline-block;padding:12px 24px;border-radius:999px;border:none;cursor:pointer;font:inherit;font-weight:700;
+            background:linear-gradient(90deg,var(--primary),var(--primary-dark));color:#fff;transition:.2s}
+        .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(20,184,166,.35)}
+        .btn--ghost{background:#fff;color:var(--primary-dark);border:1px solid var(--primary)}
+        .btn--ghost:hover{background:var(--primary-soft)}
+        .badge{display:inline-block;padding:6px 14px;border-radius:999px;background:var(--primary-soft);color:var(--primary-dark);font-size:.85rem;font-weight:600;margin-bottom:16px}
+
+        /* NAV */
+        .nav{position:fixed;inset:0 0 auto 0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+        .nav__in{display:flex;align-items:center;justify-content:space-between;height:68px}
+        .logo{font-weight:800;font-size:1.25rem;color:var(--primary-dark)}
+        .links{display:flex;gap:28px;align-items:center}
+        .links a:not(.btn){color:var(--muted)} .links a:not(.btn):hover{color:var(--primary-dark)}
+        .toggle{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;cursor:pointer}
+
+        /* HERO */
+        .hero{padding-top:140px;background:radial-gradient(circle at 85% 15%,rgba(45,212,191,.22),transparent 45%),
+        radial-gradient(circle at 5% 85%,rgba(94,234,212,.18),transparent 45%),var(--bg)}
+        .hero__grid,.split{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center}
+        .hero h1{font-size:clamp(2rem,4.5vw,3.2rem);line-height:1.2;margin-bottom:20px}
+        .hero p{font-size:1.1rem;margin-bottom:28px}
+        .cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px}
+        .stats{display:flex;gap:36px;flex-wrap:wrap}
+        .stats strong{font-size:2rem;display:block;line-height:1.1;color:var(--primary-dark)}
+        .stats span{color:var(--muted);font-size:.9rem}
+        .visual{position:relative}
+
+        .frame{aspect-ratio:4/3;border-radius:24px;overflow:hidden;display:grid;place-items:center;box-shadow:var(--shadow);
+            border:1px solid var(--line);background:linear-gradient(135deg,#d5f5ef,#eefbf9)}
+        .frame::before{content:'🌡️';font-size:6rem;opacity:.35;grid-area:1/1}
+        .frame img{grid-area:1/1;width:100%;height:100%;object-fit:cover}
+
+        .gauge-card{position:absolute;bottom:-30px;left:-30px;width:180px;height:180px;border-radius:50%;background:#fff;
+            box-shadow:var(--shadow);border:1px solid var(--line);display:grid;place-items:center}
+        .gauge{position:absolute;width:calc(100% - 20px);height:calc(100% - 20px);transform:rotate(-90deg)}
+        .gauge circle{fill:none;stroke-width:12}
+        .g-track{stroke:var(--surface-2)}
+        .g-val{stroke:var(--ok);stroke-linecap:round;stroke-dasharray:502.65;stroke-dashoffset:502.65;transition:stroke-dashoffset .8s,stroke .8s}
+        .g-label{position:relative;text-align:center;font-size:1.9rem;font-weight:800;line-height:1.1}
+        .g-label small{display:block;font-size:.8rem;color:var(--muted);font-weight:500;margin-top:4px}
+
+        /* FEATURES */
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+        .card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:28px;transition:.3s}
+        .card:hover{transform:translateY(-6px);border-color:var(--primary);box-shadow:var(--shadow);background:#fff}
+        .icon{font-size:1.8rem;width:56px;height:56px;display:grid;place-items:center;border-radius:14px;background:var(--primary-soft);margin-bottom:16px}
+        .card h3{margin-bottom:8px} .card p{color:var(--muted)}
+
+        /* DASHBOARD */
+        .dash{background:#fff;border-radius:24px;padding:28px;box-shadow:var(--shadow);border:1px solid var(--line)}
+        .dash__head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+        .live{display:inline-flex;align-items:center;gap:8px;color:var(--ok);font-weight:600;font-size:.9rem}
+        .live::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 1.5s infinite}
+        @keyframes pulse{from{box-shadow:0 0 0 0 rgba(16,185,129,.5)}to{box-shadow:0 0 0 10px rgba(16,185,129,0)}}
+        .rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+        .room{background:var(--surface-2);border-radius:14px;padding:18px;border-left:4px solid var(--ok);transition:border-color .5s}
+        .room .name{color:var(--muted);font-size:.9rem}
+        .room .temp{font-size:2rem;font-weight:800}
+        .room .meta{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+        .room .st{font-weight:600}
+        .is-ok{border-color:var(--ok)} .is-ok .st{color:var(--ok)}
+        .is-cold{border-color:var(--cool)} .is-cold .st{color:var(--cool)}
+        .is-hot{border-color:var(--hot)} .is-hot .st{color:var(--hot)}
+        .chart{background:var(--surface-2);border-radius:14px;padding:16px;height:260px}
+        #chart{width:100%;height:100%;display:block}
+
+        /* HOW */
+        .steps{list-style:none;counter-reset:s;display:grid;gap:22px;margin-top:24px}
+        .steps li{counter-increment:s;display:flex;gap:16px}
+        .steps li::before{content:counter(s);flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+            background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-weight:800}
+        .steps p{color:var(--muted)}
+
+        /* CONTACT */
+        .form{max-width:560px;margin:0 auto;display:grid;gap:16px}
+        .form input,.form textarea{width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--text);font:inherit}
+        .form input:focus,.form textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(20,184,166,.15)}
+        .toast{max-width:560px;margin:0 auto 20px;padding:14px;border-radius:12px;background:#d1fae5;color:#047857;text-align:center;display:none}
+        footer{padding:32px 0;text-align:center;color:var(--muted);border-top:1px solid var(--line);background:#fff}
+
+        .reveal{opacity:0;transform:translateY(30px);transition:opacity .8s,transform .8s}
+        .reveal.show{opacity:1;transform:none}
+
+        @media(max-width:860px){
+            .hero__grid,.split{grid-template-columns:1fr}
+            .visual{margin-bottom:60px}
+            .gauge-card{left:50%;margin-left:-75px;width:150px;height:150px}
+            .toggle{display:block}
+            .links{display:none;position:absolute;top:68px;left:0;right:0;flex-direction:column;padding:20px;background:#fff;border-bottom:1px solid var(--line)}
+            .links.open{display:flex}
+            section{padding:72px 0}
+        }
+    </style>
+</head>
+<body>
+
+<header class="nav">
+    <div class="container nav__in">
+        <a href="#" class="logo">🌡️ ThermoSense</a>
+        <nav class="links" id="links">
+            <a href="#features">Tính năng</a>
+            <a href="#dashboard">Dashboard</a>
+            <a href="#how">Cách hoạt động</a>
+            <a href="/home/listrequest" class="btn" style="padding:8px 18px">Danh Sách Yêu Cầu Gởi</a>
+            <a href="#contact" class="btn" style="padding:8px 18px">Liên hệ</a>
+        </nav>
+        <button class="toggle" id="toggle" aria-label="Menu">☰</button>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container hero__grid">
+        <div class="reveal">
+            <span class="badge">IoT · ESP32 · Spring Boot</span>
+            <h1>Kiểm soát nhiệt độ phòng <span class="grad">thông minh &amp; realtime</span></h1>
+            <p class="muted">Theo dõi nhiệt độ, độ ẩm của mọi phòng trên một màn hình, cảnh báo sớm và tự động điều chỉnh thiết bị.</p>
+            <div class="cta">
+                <a href="#contact" class="btn">Dùng thử miễn phí</a>
+                <a href="#dashboard" class="btn btn--ghost">Xem demo</a>
+            </div>
+            <div class="stats">
+                <div><strong class="counter" data-target="500">0</strong><span>+ cảm biến</span></div>
+                <div><strong class="counter" data-target="99">0</strong><span>% uptime</span></div>
+                <div><strong class="counter" data-target="5">0</strong><span>giây / lần cập nhật</span></div>
+            </div>
+        </div>
+        <div class="visual reveal">
+            <div class="frame">
+                <!-- DÁN LINK ẢNH 1 VÀO src -->
+                <img src="" alt="Thiết bị điều khiển nhiệt độ" onerror="this.remove()">
+            </div>
+            <div class="gauge-card">
+                <svg viewBox="0 0 200 200" class="gauge">
+                    <circle cx="100" cy="100" r="80" class="g-track"/>
+                    <circle cx="100" cy="100" r="80" class="g-val" id="gVal"/>
+                </svg>
+                <div class="g-label"><span id="gTemp">24.0</span>°C<small id="gStatus">Ổn định</small></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+    <div class="container">
+        <div class="head reveal">
+            <h2>Tính năng <span class="grad">nổi bật</span></h2>
+            <p>Mọi thứ cần để quản lý môi trường phòng, từ phòng server đến kho lạnh.</p>
+        </div>
+        <div class="grid">
+            <article class="card reveal"><div class="icon">🌡️</div><h3>Giám sát realtime</h3><p>Cập nhật nhiệt độ, độ ẩm mỗi vài giây từ cảm biến ESP32.</p></article>
+            <article class="card reveal"><div class="icon">🔔</div><h3>Cảnh báo tức thì</h3><p>Thông báo ngay khi nhiệt độ vượt ngưỡng an toàn.</p></article>
+            <article class="card reveal"><div class="icon">📊</div><h3>Báo cáo &amp; lịch sử</h3><p>Biểu đồ theo giờ, ngày, tháng. Xuất Excel / PDF.</p></article>
+            <article class="card reveal"><div class="icon">🏢</div><h3>Quản lý nhiều phòng</h3><p>Nhóm thiết bị theo tòa nhà, tầng, phòng.</p></article>
+            <article class="card reveal"><div class="icon">🪪</div><h3>Ra vào bằng NFC</h3><p>Ghi nhận người vào phòng bằng thẻ NFC.</p></article>
+            <article class="card reveal"><div class="icon">⚙️</div><h3>Điều khiển tự động</h3><p>Bật/tắt điều hòa, quạt theo lịch hoặc ngưỡng.</p></article>
+        </div>
+    </div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboard">
+    <div class="container">
+        <div class="head reveal">
+            <h2>Dashboard <span class="grad">trực quan</span></h2>
+            <p>Dữ liệu mô phỏng. Khi chạy thật, số liệu đến từ ESP32.</p>
+        </div>
+        <div class="dash reveal">
+            <div class="dash__head"><h3>Tổng quan các phòng</h3><span class="live">Đang cập nhật</span></div>
+            <div class="rooms">
+                <div class="room" data-temp="21.5" data-hum="45"><div class="name">Phòng Server</div><div class="temp"></div><div class="meta"><span class="hum"></span><span class="st"></span></div></div>
+                <div class="room" data-temp="25.2" data-hum="55"><div class="name">Phòng họp A</div><div class="temp"></div><div class="meta"><span class="hum"></span><span class="st"></span></div></div>
+                <div class="room" data-temp="16.8" data-hum="70"><div class="name">Kho lạnh</div><div class="temp"></div><div class="meta"><span class="hum"></span><span class="st"></span></div></div>
+                <div class="room" data-temp="28.4" data-hum="60"><div class="name">Lab IoT</div><div class="temp"></div><div class="meta"><span class="hum"></span><span class="st"></span></div></div>
+            </div>
+            <div class="chart"><canvas id="chart"></canvas></div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+    <div class="container split">
+        <div class="frame reveal">
+            <!-- DÁN LINK ẢNH 2 VÀO src -->
+            <img src="" alt="Hệ thống giám sát nhiệt độ" onerror="this.remove()">
+        </div>
+        <div class="reveal">
+            <h2>Cách <span class="grad">hoạt động</span></h2>
+            <ol class="steps">
+                <li><div><h4>Cảm biến đo</h4><p>ESP32 đọc nhiệt độ, độ ẩm và thẻ NFC.</p></div></li>
+                <li><div><h4>Truyền dữ liệu</h4><p>Gửi JSON lên server qua WiFi (MQTT/HTTP).</p></div></li>
+                <li><div><h4>Xử lý &amp; lưu trữ</h4><p>Server kiểm tra ngưỡng và lưu vào cơ sở dữ liệu.</p></div></li>
+                <li><div><h4>Hiển thị &amp; cảnh báo</h4><p>Dashboard cập nhật realtime, cảnh báo khi vượt ngưỡng.</p></div></li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+    <div class="container">
+        <div class="head reveal">
+            <h2>Đăng ký <span class="grad">dùng thử</span></h2>
+            <p>Để lại thông tin, chúng tôi sẽ liên hệ trong 24 giờ.</p>
+        </div>
+        <div class="toast" id="toast">✅ Cảm ơn bạn! Chúng tôi đã nhận được thông tin.</div>
+        <form class="form reveal" id="form">
+            <input id="txtName" type="text" placeholder="Họ và tên" required>
+            <input id="txtEmail" type="email" placeholder="Email" required>
+            <textarea id="txtRequest" rows="4" placeholder="Bạn cần giám sát bao nhiêu phòng?"></textarea>
+            <button type="button" onclick="sendRequest_Click01()" class="btn">Gửi yêu cầu (localStorage)</button>
+            <button type="button" onclick="sendRequest_Click02()" class="btn">Gửi yêu cầu (methodPost-BackEnd)</button>
+        </form>
+    </div>
+</section>
+
+<footer>© <span th:text="${#dates.year(#dates.createNow())}">2026</span> ThermoSense. All rights reserved.</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const MIN = 15, MAX = 35, CIRC = 2 * Math.PI * 80, POINTS = 30;
+        const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+        const statusOf = t => t < 18 ? {cls:'is-cold', label:'Lạnh', color:'#3b82f6'}
+            : t > 27 ? {cls:'is-hot', label:'Nóng', color:'#f97316'}
+                :          {cls:'is-ok', label:'Ổn định', color:'#10b981'};
+
+        // Menu mobile
+        const links = document.getElementById('links');
+        document.getElementById('toggle').onclick = () => links.classList.toggle('open');
+        links.querySelectorAll('a').forEach(a => a.onclick = () => links.classList.remove('open'));
+
+        // Hiện dần khi cuộn
+        const io = new IntersectionObserver(es => es.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('show'); io.unobserve(e.target); }
+        }), {threshold: .15});
+        document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+        // Đếm số
+        const cio = new IntersectionObserver(es => es.forEach(e => {
+            if (!e.isIntersecting) return;
+            const el = e.target, target = +el.dataset.target, step = Math.max(1, Math.ceil(target / 60));
+            let cur = 0;
+            const t = setInterval(() => { cur = Math.min(target, cur + step); el.textContent = cur; if (cur === target) clearInterval(t); }, 20);
+            cio.unobserve(el);
+        }));
+        document.querySelectorAll('.counter').forEach(el => cio.observe(el));
+
+        // Gauge
+        const gVal = document.getElementById('gVal'), gTemp = document.getElementById('gTemp'), gStatus = document.getElementById('gStatus');
+        let heroTemp = 24;
+        function renderGauge() {
+            const s = statusOf(heroTemp);
+            gVal.style.strokeDashoffset = CIRC * (1 - clamp((heroTemp - MIN) / (MAX - MIN), 0, 1));
+            gVal.style.stroke = s.color;
+            gTemp.textContent = heroTemp.toFixed(1);
+            gStatus.textContent = s.label;
+        }
+
+        // Thẻ phòng
+        const rooms = [...document.querySelectorAll('.room')].map(el => ({el, temp: +el.dataset.temp, hum: +el.dataset.hum}));
+        function renderRoom(r) {
+            const s = statusOf(r.temp);
+            r.el.classList.remove('is-cold', 'is-ok', 'is-hot');
+            r.el.classList.add(s.cls);
+            r.el.querySelector('.temp').textContent = r.temp.toFixed(1) + '°C';
+            r.el.querySelector('.hum').textContent = '💧 ' + r.hum + '%';
+            r.el.querySelector('.st').textContent = s.label;
+        }
+
+        // Biểu đồ
+        const canvas = document.getElementById('chart'), ctx = canvas.getContext('2d'), hist = [];
+        const avg = () => rooms.reduce((a, r) => a + r.temp, 0) / rooms.length;
+        function draw() {
+            const w = canvas.clientWidth, h = canvas.clientHeight, L = 36, T = 16, B = 16;
+            ctx.clearRect(0, 0, w, h);
+            const lo = Math.min(...hist) - 1, hi = Math.max(...hist) + 1;
+            const x = i => L + (w - L - 8) * i / (POINTS - 1);
+            const y = v => T + (h - T - B) * (hi - v) / (hi - lo);
+
+            ctx.strokeStyle = 'rgba(13,148,136,.10)'; ctx.fillStyle = '#5f7f82'; ctx.font = '11px sans-serif';
+            for (let i = 0; i <= 4; i++) {
+                const v = hi - (hi - lo) * i / 4;
+                ctx.beginPath(); ctx.moveTo(L, y(v)); ctx.lineTo(w - 8, y(v)); ctx.stroke();
+                ctx.fillText(v.toFixed(1), 0, y(v) + 4);
+            }
+            const path = () => { ctx.beginPath(); hist.forEach((v, i) => i ? ctx.lineTo(x(i), y(v)) : ctx.moveTo(x(i), y(v))); };
+
+            const g = ctx.createLinearGradient(0, T, 0, h);
+            g.addColorStop(0, 'rgba(20,184,166,.30)'); g.addColorStop(1, 'rgba(20,184,166,0)');
+            path(); ctx.lineTo(x(hist.length - 1), h - B); ctx.lineTo(x(0), h - B); ctx.closePath();
+            ctx.fillStyle = g; ctx.fill();
+
+            path(); ctx.strokeStyle = '#0d9488'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+
+            const last = hist.length - 1;
+            ctx.beginPath(); ctx.arc(x(last), y(hist[last]), 4, 0, Math.PI * 2); ctx.fillStyle = '#14b8a6'; ctx.fill();
+        }
+        function resize() {
+            const dpr = devicePixelRatio || 1, r = canvas.getBoundingClientRect();
+            canvas.width = r.width * dpr; canvas.height = r.height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            draw();
+        }
+
+        // Mô phỏng realtime
+        function tick() {
+            heroTemp = clamp(heroTemp + (Math.random() - .5) * .6, 16, 32);
+            rooms.forEach(r => {
+                r.temp = clamp(r.temp + (Math.random() - .5) * .5, MIN, MAX);
+                r.hum = clamp(r.hum + Math.round((Math.random() - .5) * 2), 30, 80);
+                renderRoom(r);
+            });
+            renderGauge();
+            hist.push(avg()); if (hist.length > POINTS) hist.shift();
+            draw();
+        }
+
+        for (let i = 0; i < POINTS; i++) hist.push(avg() + (Math.random() - .5));
+        rooms.forEach(renderRoom);
+        renderGauge();
+        resize();
+        addEventListener('resize', resize);
+        setInterval(tick, 2000);
+
+        // Form (chỉ FE)
+        document.getElementById('form').onsubmit = e => {
+            e.preventDefault();
+            document.getElementById('toast').style.display = 'block';
+            e.target.reset();
+        };
+    });
+
+    // function getDataForm () {
+    //     if(!document.getElementById('txtName').value){
+    //         Swal.fire({
+    //             icon: "error",
+    //             title: "Thiếu thông tin",
+    //             text: "Không để trống Tên!",
+    //         });
+    //         document.getElementById('txtName').focus();
+    //         return false;
+    //     }
+    //     if(!document.getElementById('txtEmail').value){
+    //         alert("Không để trống Email");
+    //         document.getElementById('txtEmail').focus();
+    //         return false;
+    //     }
+    //     if(!document.getElementById('txtRequest').value){
+    //         alert("Không để trống Yêu Cầu");
+    //         document.getElementById('txtRequest').focus();
+    //         return false;
+    //     }
+    //     return {
+    //         username: document.getElementById('txtName').value,
+    //         email: document.getElementById('txtEmail').value,
+    //         question: document.getElementById('txtRequest').value
+    //     }
+    // }
+    //
+    // function sendRequest_Click01() {
+    //     let objForm = getDataForm();
+    //     // Ghi vào local storage
+    //     window.localStorage.setItem('userRequest', JSON.stringify(objForm));
+    //     alert("Ghi nhận thành công.")
+    // }
+    //
+    // async function sendRequest_Click02() {
+    //     let objForm = getDataForm();
+    //     // Gọi method Post
+    //     const result = await axios.post("/api/hello/insert-request", objForm);
+    //     console.log(result);
+    // }
+
+</script>
+</body>
+</html>

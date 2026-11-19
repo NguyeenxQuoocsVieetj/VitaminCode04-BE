@@ -13,4 +13,6 @@ public interface RoleMapper {
     int createRole(RoleEntity roleEntity);
     int updateRole(RoleEntity roleEntity);
     int deleteById(@Param("idRole") int id);
+
+    RoleEntity selectRoleById(@Param("id") int id);
 }

@@ -44,4 +44,13 @@ public class RoleServiceImpl implements RoleService {
         if(result != 0) return true;
         throw new RuntimeException("Xóa thất bại");
     }
+
+    @Override
+    public RoleEntity getRoleById(int id) {
+        RoleEntity result = roleUserMapper.selectRoleById(id);
+        if(result != null){
+            return result;
+        }
+        throw new RuntimeException("Không tìm thấy Role với id = " + id);
+    }
 }
