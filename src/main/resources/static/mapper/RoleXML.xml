@@ -18,6 +18,15 @@
         where rol.role_name = #{role_name}
     </select>
 
+    <select id="selectRoleById" resultType="org.example.vitamincode04.entity.RoleEntity">
+        SELECT
+            r.id,
+            r.role_name,
+            r.description
+        FROM role r
+        WHERE id = #{id}
+    </select>
+
     <insert id="createRole" parameterType="org.example.vitamincode04.entity.RoleEntity" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO role (role_name, description)
         values (#{role_name}, #{description})

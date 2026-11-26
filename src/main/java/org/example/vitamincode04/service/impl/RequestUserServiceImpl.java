@@ -6,6 +6,7 @@ import org.example.vitamincode04.mapper.RequestOfUserMapper;
 import org.example.vitamincode04.service.RequestUserService;
 import org.springframework.stereotype.Service;
 
+import java.sql.ClientInfoStatus;
 import java.util.List;
 
 @Service
@@ -20,8 +21,17 @@ public class RequestUserServiceImpl implements RequestUserService {
     }
 
     @Override
-    public RequestOfUser getRequestUserFindByEmail(String email) {
-        return reqOfUserMapper.selectRequestOfUserFindByEmail(email);
+    public List<RequestOfUser> getRequestUserFindByEmail(String email) {
+        List<RequestOfUser> result = reqOfUserMapper.selectRequestOfUserFindByEmail(email);
+        if(!result.isEmpty()) return result;
+        throw new RuntimeException("Không tìm thấy Request");
+    }
+
+    @Override
+    public List<RequestOfUser> getRequestOfUserFindByQuestion(String question) {
+        List<RequestOfUser> result = reqOfUserMapper.selectRequestOfUserFindByQuestion(question);
+        if(!result.isEmpty()) return result;
+        throw new RuntimeException("Không tìm thấy Request");
     }
 
     @Override

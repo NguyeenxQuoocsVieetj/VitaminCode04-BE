@@ -54,8 +54,21 @@
         FROM list_request lr
                  LEFT JOIN user_profile up on lr.user_profile_id = up.id
                  LEFT JOIN role r on up.role_id = r.id
-        WHERE up.email = #{email}
-        LIMIT 1
+        WHERE lr.email = #{email}
+    </select>
+
+    <select id="selectRequestOfUserFindByQuestion" resultMap="requestUser">
+        SELECT
+            lr.id,
+            lr.username,
+            lr.question,
+            lr.status,
+            r.role_name,
+            r.description
+        FROM list_request lr
+                 JOIN user_profile up on lr.user_profile_id = up.id
+                 JOIN role r on up.role_id = r.id
+        WHERE lr.question LIKE CONCAT('%', #{question}, '%')
     </select>
 
     <insert id="insertRequestOfUser" parameterType="org.example.vitamincode04.entity.RequestOfUser" useGeneratedKeys="true" keyProperty="id">

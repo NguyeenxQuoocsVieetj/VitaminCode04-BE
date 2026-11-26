@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,9 +45,18 @@ public class UserApi {
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<String> doDeleteUserProfile(@PathVariable Integer id){
-        if(userSer.deleteUserById(id)) return ResponseEntity.ok("Xóa thành công User id = " + id);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Xóa User id = " + id + " thất bại");
+    public Map<Object, UserEntity> doDeleteUserProfile(@PathVariable Integer id){
+        HashMap result = new HashMap();
+        try{
+            result.put("message", "Xóa thành công yêu cầu của user id = " + id);
+            result.put("data", userSer.deleteUserById(id));
+            result.put("status", 200);
+        }catch (Exception e){
+            result.put("message", "Xóa yêu cầu của user id = " + id + " thất bại.");
+            result.put("data", null);
+            result.put("status", 500);
+        }
+        return result;
     }
 
 }

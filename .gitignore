@@ -35,3 +35,29 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Log ###
+*.log
+logs/
+
+### File rác của hệ điều hành ###
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+# macOS
+.DS_Store
+
+### File tạm / backup ###
+*.tmp
+*.bak
+*.swp
+*~
+
+### File chứa thông tin bí mật ###
+.env
+*.env
+application-local.properties
+application-local.yml
+
+/markdown

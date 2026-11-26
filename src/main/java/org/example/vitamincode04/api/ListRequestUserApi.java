@@ -21,9 +21,34 @@ public class ListRequestUserApi {
         return ResponseEntity.ok(reqUserSer.getAllRequestOfUsers());
     }
 
-    @GetMapping("/requests/search")
-    public ResponseEntity<RequestOfUser> doGetRequestOfUserFindByEmail(@RequestParam String email) {
-        return ResponseEntity.ok(reqUserSer.getRequestUserFindByEmail(email));
+    @GetMapping("/requests/search-by-email")
+    public Map<Object, RequestOfUser> doGetRequestOfUserFindByEmail(@RequestParam String email) {
+        HashMap result = new HashMap();
+        try{
+            result.put("message", "Tìm kiếm thành công Request với email là: " + email);
+            result.put("data", reqUserSer.getRequestUserFindByEmail(email));
+            result.put("stats", 200);
+        }catch (Exception e){
+            result.put("message", e.getMessage());
+            result.put("data", null);
+            result.put("status", 500);
+        }
+        return result;
+    }
+
+    @GetMapping("/requests/search-by-question")
+    public Map<Object, RequestOfUser> doGetRequestOfUserFindByQuestion(@RequestParam String question){
+        HashMap result = new HashMap();
+        try {
+            result.put("message", "Tìm kiếm thành công Request với question là: " + question);
+            result.put("data", reqUserSer.getRequestOfUserFindByQuestion(question));
+            result.put("status", 200);
+        } catch (Exception e) {
+            result.put("message", e.getMessage());
+            result.put("data", null);
+            result.put("status", 500);
+        }
+        return result;
     }
 
     @PostMapping("/requests")

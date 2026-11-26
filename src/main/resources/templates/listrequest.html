@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Danh sách yêu cầu – ThermoSense</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root{
+            --bg:#f3faf9; --surface:#ffffff; --surface-2:#e8f5f3;
+            --text:#1f3a3d; --muted:#5f7f82; --line:rgba(13,148,136,.14);
+            --primary:#14b8a6; --primary-dark:#0d9488; --primary-soft:#ccfbf1;
+            --shadow:0 10px 30px rgba(13,148,136,.10);
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{min-height:100vh;font-family:'Be Vietnam Pro',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+        a{color:inherit;text-decoration:none}
+        .nav{background:rgba(255,255,255,.85);border-bottom:1px solid var(--line)}
+        .container{width:min(1140px,92%);margin-inline:auto}
+        .nav__in{display:flex;align-items:center;justify-content:space-between;min-height:68px}
+        .logo{font-weight:800;font-size:1.25rem;color:var(--primary-dark)}
+        .back{color:var(--primary-dark);font-size:.95rem;font-weight:600}
+        .back:hover{color:var(--primary)}
+        main{padding:72px 0}
+        .head{text-align:center;max-width:640px;margin:0 auto 36px}
+        h1{font-size:clamp(1.8rem,3vw,2.4rem);line-height:1.25;margin-bottom:12px}
+        .grad{background:linear-gradient(90deg,var(--primary-dark),var(--primary));-webkit-background-clip:text;background-clip:text;color:transparent}
+        .head p{color:var(--muted)}
+        .table-card{overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+        .table-scroll{overflow-x:auto}
+        table{width:100%;border-collapse:collapse;text-align:left}
+        th,td{padding:18px 24px;border-bottom:1px solid var(--line);vertical-align:top}
+        th{background:var(--surface-2);color:var(--primary-dark);font-size:.9rem;font-weight:700}
+        td{font-size:.95rem}
+        tbody tr:last-child td{border-bottom:0}
+        .empty{text-align:center;color:var(--muted);padding:36px 24px}
+        @media(max-width:600px){
+            main{padding:48px 0}
+            th,td{padding:14px 16px}
+            .nav__in{min-height:60px}
+        }
+    </style>
+</head>
+<body>
+<header class="nav">
+    <div class="container nav__in">
+        <a class="logo" th:href="@{/}">ThermoSense</a>
+        <a class="back" th:href="@{/}">← Quay lại trang chủ</a>
+    </div>
+</header>
+
+<main class="container">
+    <div class="head">
+        <h1>Danh sách <span class="grad">yêu cầu</span></h1>
+        <p>Thông tin đăng ký dùng thử từ khách hàng.</p>
+    </div>
+
+    <div class="table-card">
+        <div class="table-scroll">
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">Họ và tên</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Nhu cầu giám sát</th>
+                </tr>
+                </thead>
+                <tbody id="tbodyRequest">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script th:inline="javascript">
+    // lấy data từ BackEnd - ArrayList/Model
+    var requestOfUsers = /*[[${requestOfUsers}]]*/ [];
+    // lấy data từ FrontEnd - Local Storage
+    var dataLocalStorage = JSON.parse(window.localStorage.getItem('userRequest'));
+    // gộp dữ liệu BE và FE vào chung 1 mãng.
+    if (dataLocalStorage) {
+        requestOfUsers.push(dataLocalStorage);
+    }
+    var bodyDataString = "";
+    for(let i = 0 ; i < requestOfUsers.length; i++){
+        bodyDataString += `<tr>`+
+            `<td>${requestOfUsers[i].username}</td>`+
+            `<td>${requestOfUsers[i].email}</td>`+
+            `<td>${requestOfUsers[i].question}</td>`+
+            `</tr>`
+    };
+
+    document.getElementById("tbodyRequest").innerHTML = bodyDataString;
+
+</script>
+
+</body>
+</html>

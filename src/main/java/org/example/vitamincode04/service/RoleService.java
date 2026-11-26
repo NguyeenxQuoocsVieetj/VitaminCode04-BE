@@ -10,4 +10,5 @@ public interface RoleService {
     RoleEntity createNewRole(RoleEntity roleEntity);
     RoleEntity updateRole(RoleEntity roleEntity);
     boolean deleteById(Integer id);
+    RoleEntity getRoleById(int id);
 }

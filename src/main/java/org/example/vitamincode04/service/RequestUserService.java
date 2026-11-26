@@ -6,7 +6,8 @@ import java.util.List;
 
 public interface RequestUserService {
     List<RequestOfUser> getAllRequestOfUsers();
-    RequestOfUser getRequestUserFindByEmail(String email);
+    List<RequestOfUser> getRequestUserFindByEmail(String email);
+    List<RequestOfUser> getRequestOfUserFindByQuestion(String question);
     RequestOfUser updateRequestOfUser(RequestOfUser requestEntity);
     RequestOfUser insertRequestOfUser(RequestOfUser requestEntity);
     int deleteReqOfUserById(int id);
