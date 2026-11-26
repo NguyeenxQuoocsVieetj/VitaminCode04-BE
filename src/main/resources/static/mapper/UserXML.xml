@@ -28,8 +28,8 @@
     <select id="selectUserByUserName" resultMap="userMapper">
         SELECT
             up.id,
-            up.username,
             up.email,
+            up.username,
             r.id as role_id,
             r.role_name,
             r.description

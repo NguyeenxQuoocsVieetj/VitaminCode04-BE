@@ -9,7 +9,8 @@ import java.util.List;
 @Mapper
 public interface RequestOfUserMapper {
     List<RequestOfUser> selectRequestOfUsers();
-    RequestOfUser selectRequestOfUserFindByEmail(@Param("email") String email);
+    List<RequestOfUser> selectRequestOfUserFindByEmail(@Param("email") String email);
+    List<RequestOfUser> selectRequestOfUserFindByQuestion(@Param("question") String question);
     int insertRequestOfUser(RequestOfUser requestEntity);
     int updateRequestOfUser(RequestOfUser requestEntity);
     int deleteRequestOfUser(@Param("userId") int id);
